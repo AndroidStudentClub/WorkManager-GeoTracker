@@ -24,8 +24,7 @@ abstract class GeoInfoDatabase : RoomDatabase() {
             synchronized(this) {
                 val instance = Room.databaseBuilder(
                     context.applicationContext, GeoInfoDatabase::class.java, "geo_info_database"
-                ).allowMainThreadQueries()
-                    .build()
+                ).build()
                 INSTANCE = instance
                 return instance
             }

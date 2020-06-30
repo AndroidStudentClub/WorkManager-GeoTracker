@@ -29,9 +29,5 @@ class FirstFragment : Fragment() {
         view.findViewById<Button>(R.id.button_first).setOnClickListener {
             findNavController().navigate(R.id.action_FirstFragment_to_SecondFragment)
         }
-
-        // Для проверки работы БД и Flipper
-        val dao = GeoInfoDatabase.getDatabase(view.context).wordDao()
-        dao.insert(GeoInfo(0, 37.419857, -122.078827, System.currentTimeMillis()))
     }
 }
