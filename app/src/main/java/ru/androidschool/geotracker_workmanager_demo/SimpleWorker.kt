@@ -18,9 +18,15 @@ class SimpleWorker(private val context: Context, params: WorkerParameters) :
     companion object {
         private const val SIMPLE_WORKER_TAG = "SimpleWorkerTag"
 
+        private fun createConstraints() = Constraints.Builder()
+            .setRequiredNetworkType(NetworkType.UNMETERED)
+            .setRequiresCharging(true)
+            .build()
+
         // Метод для создания OneTimeWorkRequest
         private fun createWorkRequest(data: Data): OneTimeWorkRequest {
             return OneTimeWorkRequest.Builder(SimpleWorker::class.java)
+                .setConstraints(createConstraints())
                 .setInputData(data)
                 .addTag(SIMPLE_WORKER_TAG)
                 .build()
