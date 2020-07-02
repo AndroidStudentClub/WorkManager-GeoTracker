@@ -1,12 +1,20 @@
 package ru.androidschool.geotracker_workmanager_demo
 
+import android.Manifest
+import android.annotation.SuppressLint
+import android.content.pm.PackageManager
 import android.os.Bundle
-import com.google.android.material.floatingactionbutton.FloatingActionButton
-import com.google.android.material.snackbar.Snackbar
+import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
-import android.view.Menu
-import android.view.MenuItem
-import ru.androidschool.geotracker_workmanager_demo.database.GeoInfoDatabase
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
+import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.google.android.material.snackbar.BaseTransientBottomBar.LENGTH_SHORT
+import com.google.android.material.snackbar.Snackbar
+import kotlinx.android.synthetic.main.activity_main.*
+import ru.androidschool.geotracker_workmanager_demo.domain.LocationRepository
+
+const val COARSE_LOCATION_CODE = 123
 
 class MainActivity : AppCompatActivity() {
 
@@ -16,24 +24,66 @@ class MainActivity : AppCompatActivity() {
         setSupportActionBar(findViewById(R.id.toolbar))
 
         findViewById<FloatingActionButton>(R.id.fab).setOnClickListener { view ->
-            SimpleWorker.startWork(this)
+            // По нажатию на FAB будет выполняться метод onClick()
+            onClick()
         }
-
     }
 
-    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        menuInflater.inflate(R.menu.menu_main, menu)
-        return true
+    // Здесь проверяем есть ли права
+    private fun onClick() {
+        if (isPermissionGranted()) {
+            startWork()
+        } else {
+            // Если нет - то запрашиваем
+            ActivityCompat.requestPermissions(
+                this,
+                listOf(Manifest.permission.ACCESS_COARSE_LOCATION).toTypedArray(),
+                COARSE_LOCATION_CODE
+            )
+        }
     }
 
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        return when (item.itemId) {
-            R.id.action_settings -> true
-            else -> super.onOptionsItemSelected(item)
+    // Метод проверки есть ли права на получение координат
+    private fun isPermissionGranted(): Boolean {
+        return (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)
+                == PackageManager.PERMISSION_GRANTED)
+    }
+
+    // Если права есть, то в методе getLocation() через репозиторий получаем координаты
+    @SuppressLint("CheckResult")
+    private fun getLocation() {
+        val repo = LocationRepository(this)
+        repo.getLocation()
+            .subscribe({
+                Log.d("LocationWorker", "${it.latitude.toString()};  ${it.longitude.toString()}")
+            }, {
+                Log.d("LocationWorker", "Error$it")
+            })
+    }
+
+    private fun startWork() {
+        getLocation()
+    }
+
+    // После того как пользователь разрешил, через репозиторий получаем координаты
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<String>, grantResults: IntArray
+    ) {
+        when (requestCode) {
+            COARSE_LOCATION_CODE -> {
+                if ((grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
+                    startWork()
+                } else {
+                    // Если прав нет - показываем предупреждение
+                    Snackbar.make(
+                        fab,
+                        "Вы не дали разрешение на получение геолокации",
+                        LENGTH_SHORT
+                    ).show()
+                }
+                return
+            }
         }
     }
 }
