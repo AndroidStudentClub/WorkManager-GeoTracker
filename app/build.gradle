@@ -51,6 +51,7 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
 
     implementation "androidx.work:work-runtime-ktx:$rootProject.workManager"
+    implementation "androidx.work:work-rxjava2:$rootProject.workManager"
 
     // Room components
     implementation "androidx.room:room-runtime:$rootProject.roomVersion"

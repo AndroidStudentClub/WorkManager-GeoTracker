@@ -62,7 +62,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun startWork() {
-        getLocation()
+        LocationWorker.startWork(this)
     }
 
     // После того как пользователь разрешил, через репозиторий получаем координаты
